@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { APP_COLORS } from '../common/colors';
 
@@ -21,6 +21,18 @@ const MainScreen = () => {
 
       if (MAX_TRANSLATE_Y > newValue && newValue > 0) {
         translateY.value = newValue;
+      }
+    })
+    .onEnd((event) => {
+      if (translateY.value > MAX_TRANSLATE_Y * 0.5) {
+        translateY.value = withTiming(MAX_TRANSLATE_Y);
+      } else if (
+        translateY.value > MAX_TRANSLATE_Y * 0.2 &&
+        translateY.value < MAX_TRANSLATE_Y * 0.5
+      ) {
+        translateY.value = withTiming(MAX_TRANSLATE_Y * 0.2);
+      } else {
+        translateY.value = withTiming(0);
       }
     });
 
