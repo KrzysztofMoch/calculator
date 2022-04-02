@@ -11,10 +11,13 @@
     "format": "prettier --check ./src"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^1.8.1",
+    "mathjs": "^10.4.2",
     "react": "17.0.2",
     "react-native": "0.67.4",
     "react-native-gesture-handler": "^2.3.2",
-    "react-native-reanimated": "^2.5.0"
+    "react-native-reanimated": "^2.5.0",
+    "react-redux": "^7.2.8"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
