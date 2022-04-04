@@ -25,11 +25,9 @@ const MainScreen = () => {
 
   const mathFunctionContainerHeight = useSharedValue<number>(70);
   const [isMathSubViewExpanded, setIsMathSubViewExpanded] = useState<boolean>(false);
-  const [result, setResult] = useState<string>('');
-  const [expr, setExpr] = useState<number[]>([0]);
 
   const gesture = Gesture.Pan()
-    .onStart((event) => {
+    .onStart(() => {
       context.value = { y: translateY.value };
     })
     .onUpdate((event) => {
@@ -39,7 +37,7 @@ const MainScreen = () => {
         translateY.value = newValue;
       }
     })
-    .onEnd((event) => {
+    .onEnd(() => {
       if (translateY.value > MAX_TRANSLATE_Y * 0.5) {
         translateY.value = withTiming(MAX_TRANSLATE_Y - BOTTOM_SPACE);
       } else if (

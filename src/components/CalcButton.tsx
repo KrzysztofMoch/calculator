@@ -36,6 +36,8 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
     let res = calculatorData.result;
     let exprString = calculatorData.expr.join('');
 
+    // ---- brackets fix ----
+
     let leftBracketCount = exprString.match(/\(/g)?.length;
     let rightBracketCount = exprString.match(/\)/g)?.length;
 
@@ -52,11 +54,15 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
       }
     }
 
+    // ---- try calculate string ----
+
     try {
       res = Mathjs.evaluate(convertSymbols(exprString)).toString();
     } catch (error) {
       console.log(error, typeof error);
     }
+
+    // ---- check if have good result ----
 
     if (!isNaN(parseFloat(res))) {
       dispatch(setResult(res));
@@ -73,6 +79,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
       return;
     }
 
+    // check if cacl string is only "0"
     if (calculatorData.expr.join() === '0') {
       dispatch(setExpr([value]));
     } else {
@@ -83,6 +90,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   const operatorHandler = (value: string) => {
     const lastElement = calculatorData.expr[calculatorData.expr.length - 1];
 
+    // some cases when you should add operator
     if (
       !isNaN(Number(lastElement)) ||
       lastElement === '(' ||
@@ -96,6 +104,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   };
 
   const functionHandler = (value: string) => {
+    // add fun( + equalled value + )
     if (calculatorData.equalled) {
       dispatch(setExpr([value, ...calculatorData.expr, ')']));
     } else {
@@ -119,6 +128,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   const clearHandler = () => {
     dispatch(setExpr(['0']));
     dispatch(setResult('0'));
+    setEqualled(false);
   };
 
   const deleteHandler = () => {
