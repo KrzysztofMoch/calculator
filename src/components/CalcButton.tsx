@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleProp, Text, ToastAndroid, TouchableOpacity, ViewStyle } from 'react-native';
+import { StyleProp, Text, ToastAndroid, TouchableWithoutFeedback, ViewStyle } from 'react-native';
 import { buttonData } from '../common/buttonsData';
-import Animated from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { all, create } from 'mathjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { setEqualled, setExpr, setResult } from '../redux/calculatorSlice';
@@ -19,7 +19,8 @@ ln.transform = (num: number) => ln(num);
 Mathjs.import({ ln: ln }, {});
 
 const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
-  const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+  const borderRadius = useSharedValue<number>(40);
+  const opacity = useSharedValue<number>(1);
 
   // ------------------------- Utilities -------------------------
 
@@ -27,7 +28,9 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   const dispatch = useDispatch();
 
   const convertSymbols: (value: string) => string = (value) => {
-    return value.replace('x', '*');
+    let newValue = value.replace('x', '*');
+    newValue = newValue.replace('𝝿', '(22/7)');
+    return newValue;
   };
 
   // ------------------------- Handlers -------------------------
@@ -59,16 +62,14 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
     try {
       res = Mathjs.evaluate(convertSymbols(exprString)).toString();
     } catch (error) {
-      console.log(error, typeof error);
+      res = 'Invalid Syntax';
     }
 
     // ---- check if have good result ----
 
-    if (!isNaN(parseFloat(res))) {
-      dispatch(setResult(res));
-      dispatch(setExpr([res]));
-    }
+    !isNaN(parseFloat(res)) ? dispatch(setExpr([res])) : dispatch(setExpr(['0']));
 
+    dispatch(setResult(res));
     dispatch(setEqualled(true));
   };
 
@@ -79,7 +80,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
       return;
     }
 
-    // check if cacl string is only "0"
+    // check if calc string is only "0"
     if (calculatorData.expr.join() === '0') {
       dispatch(setExpr([value]));
     } else {
@@ -105,6 +106,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
 
   const functionHandler = (value: string) => {
     // add fun( + equalled value + )
+
     if (calculatorData.equalled) {
       dispatch(setExpr([value, ...calculatorData.expr, ')']));
     } else {
@@ -116,7 +118,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
           if (isNaN(parseFloat(last))) {
             dispatch(setExpr([...calculatorData.expr, value]));
           } else {
-            dispatch(setExpr([...calculatorData.expr, '*', value]));
+            dispatch(setExpr([...calculatorData.expr, 'x', value]));
           }
         }
       }
@@ -195,16 +197,33 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
     }
   };
 
+  const handlePressAnimation: (out: boolean) => void = (out) => {
+    opacity.value = out ? withTiming(1) : withTiming(0.6, { duration: 100 });
+    borderRadius.value = out ? withTiming(40) : withTiming(25, { duration: 100 });
+  };
+
+  // ------------------------- Animated Styles -------------------------
+
+  const rStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      borderRadius: borderRadius.value,
+    };
+  });
+
   // ------------------------- Render Functions -------------------------
 
   return (
-    <AnimatedTouchableOpacity
-      style={[style, { backgroundColor: data.backgroundColor }]}
+    <TouchableWithoutFeedback
       onPress={data.text === '()' ? () => bracketHandler('(') : () => handlePress()}
       onLongPress={data.text === '()' ? () => operatorHandler(')') : () => {}}
+      onPressIn={() => handlePressAnimation(false)}
+      onPressOut={() => handlePressAnimation(true)}
     >
-      <Text style={{ fontSize: data.fontSize }}>{data.text}</Text>
-    </AnimatedTouchableOpacity>
+      <Animated.View style={[style, { backgroundColor: data.backgroundColor }, rStyle]}>
+        <Text style={{ fontSize: data.fontSize }}>{data.text}</Text>
+      </Animated.View>
+    </TouchableWithoutFeedback>
   );
 };
 
