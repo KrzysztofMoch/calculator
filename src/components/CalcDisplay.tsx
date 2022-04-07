@@ -18,8 +18,12 @@ const CalcDisplay: React.FC<CalcDisplayProps> = ({ historyListStyle, resultConta
   return (
     <View style={styles.container}>
       <View style={[{ height: resultContainerHeight }, styles.calcDisplay]}>
-        <Text style={styles.calcDisplayText}>{calculatorData.expr}</Text>
-        <Text style={styles.calcDisplaySmallText}>{calculatorData.result}</Text>
+        <Text style={styles.calcDisplayText} numberOfLines={1}>
+          {calculatorData.expr}
+        </Text>
+        <Text style={styles.calcDisplaySmallText} numberOfLines={1}>
+          {calculatorData.result}
+        </Text>
         <Text style={styles.calcDisplayDescription}>Current calculations</Text>
       </View>
       <Animated.ScrollView
@@ -50,9 +54,9 @@ const styles = StyleSheet.create({
   },
   calcDisplay: {
     display: 'flex',
+    paddingRight: 20,
     alignItems: 'flex-end',
     justifyContent: 'center',
-    paddingRight: 20,
   },
   calcDisplayDescription: {
     position: 'absolute',
