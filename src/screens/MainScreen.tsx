@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
@@ -18,7 +18,7 @@ const BOTTOM_SPACE = 50;
 
 const MainScreen = () => {
   // Add animated component for TouchableOpacity
-  const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+  const AnimatedTouchable = Animated.createAnimatedComponent(TouchableWithoutFeedback);
 
   const translateY = useSharedValue<number>(0);
   const context = useSharedValue<{ y: number }>({ y: 0 });
@@ -44,7 +44,7 @@ const MainScreen = () => {
         translateY.value > MAX_TRANSLATE_Y * 0.2 &&
         translateY.value < MAX_TRANSLATE_Y * 0.5
       ) {
-        translateY.value = withTiming(MAX_TRANSLATE_Y * 0.2);
+        translateY.value = withTiming(MAX_TRANSLATE_Y * 0.3);
       } else {
         translateY.value = withTiming(0);
       }
@@ -98,7 +98,6 @@ const MainScreen = () => {
   const rMathFunctionsSubViewButton = useAnimatedStyle(() => {
     return {
       height: isMathSubViewExpanded ? withTiming(70) : withTiming(0),
-      opacity: isMathSubViewExpanded ? withTiming(1) : withTiming(0),
     };
   });
 
@@ -109,20 +108,6 @@ const MainScreen = () => {
   });
 
   // ------------------------- Render Functions -------------------------
-
-  const renderMathFunctionButton = (data: buttonData) => (
-    <TouchableOpacity style={styles.mathFunctionsButton}>
-      <Text style={{ fontSize: data.fontSize }}>{data.text}</Text>
-    </TouchableOpacity>
-  );
-
-  const renderMathFunctionSubViewButton = (data: buttonData) => (
-    <AnimatedTouchableOpacity
-      style={[styles.mathFunctionsSubViewButton, rMathFunctionsSubViewButton]}
-    >
-      <Text style={{ fontSize: data.fontSize }}>{data.text}</Text>
-    </AnimatedTouchableOpacity>
-  );
 
   const renderMathFunctions = () => {
     const handleExpanded = () => {
@@ -136,20 +121,29 @@ const MainScreen = () => {
     return (
       <Animated.View style={[styles.mathFunctionsContainer, rMathFunctionsContainer]}>
         <View style={styles.mathFunctionsButtonsContainer}>
-          {mathFunctionsButtonsData.map((data) => {
-            return renderMathFunctionButton(data);
-          })}
-          <AnimatedTouchableOpacity
+          {mathFunctionsButtonsData.map((data) => (
+            <CalcButton data={data} style={styles.mathFunctionsButton} />
+          ))}
+          <AnimatedTouchable
             style={[styles.mathFunctionsButton, rMathFunctionsButton]}
             onPressOut={handleExpanded}
           >
             <Text style={{ fontSize: 40 }}>{'>'}</Text>
-          </AnimatedTouchableOpacity>
+          </AnimatedTouchable>
         </View>
-        <Animated.View style={[styles.mathFunctionsSubView, rMathFunctionsSubView]}>
-          {mathFunctionsSubViewButtonsData.map((data) => {
-            return renderMathFunctionSubViewButton(data);
-          })}
+        <Animated.View
+          style={[
+            styles.mathFunctionsSubView,
+            rMathFunctionsSubView,
+            { display: isMathSubViewExpanded ? 'flex' : 'none' },
+          ]}
+        >
+          {mathFunctionsSubViewButtonsData.map((data) => (
+            <CalcButton
+              data={data}
+              style={[styles.mathFunctionsSubViewButton, rMathFunctionsSubViewButton]}
+            />
+          ))}
         </Animated.View>
       </Animated.View>
     );
@@ -166,7 +160,7 @@ const MainScreen = () => {
         <CalcDisplay
           historyListStyle={rHistoryListContainer}
           resultContainerHeight={
-            SCREEN_HEIGHT - (MAX_TRANSLATE_Y + BOTTOM_SPACE + 25) /*15px is line height*/
+            SCREEN_HEIGHT - (MAX_TRANSLATE_Y + BOTTOM_SPACE + 25) /*25px is line height*/
           }
         />
       </Animated.View>
@@ -221,11 +215,11 @@ const styles = StyleSheet.create({
   mathFunctionsContainer: {
     width: SCREEN_WIDTH,
     display: 'flex',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     alignContent: 'flex-start',
   },
   mathFunctionsButtonsContainer: {
-    width: SCREEN_WIDTH,
+    width: SCREEN_WIDTH - 20,
     alignSelf: 'flex-start',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -248,7 +242,6 @@ const styles = StyleSheet.create({
   },
   mathFunctionsSubView: {
     width: SCREEN_WIDTH - 60,
-    display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
