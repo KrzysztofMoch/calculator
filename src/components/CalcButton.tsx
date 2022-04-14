@@ -4,7 +4,7 @@ import { buttonData } from '../common/buttonsData';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { all, create } from 'mathjs';
 import { useDispatch, useSelector } from 'react-redux';
-import { setEqualled, setExpr, setResult } from '../redux/calculatorSlice';
+import { addToHistory, setEqualled, setExpr, setResult } from '../redux/calculatorSlice';
 import { RootReducer } from '../redux/store';
 
 interface CalcButtonProps {
@@ -52,6 +52,10 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   // ------------------------- Handlers -------------------------
 
   const calculate = () => {
+    if (calculatorData.equalled) {
+      return;
+    }
+
     let res = calculatorData.result;
     let exprString = convertSymbols(calculatorData.expr.join(''));
 
@@ -79,6 +83,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
 
     try {
       res = Mathjs.evaluate(exprString).toString();
+      dispatch(addToHistory({ expr: calculatorData.expr.join(''), result: res }));
     } catch (error) {
       res = 'Invalid Syntax';
     }
