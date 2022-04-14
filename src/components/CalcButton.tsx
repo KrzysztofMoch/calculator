@@ -28,16 +28,32 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   const dispatch = useDispatch();
 
   const convertSymbols: (value: string) => string = (value) => {
-    let newValue = value.replace('x', '*');
-    newValue = newValue.replace('𝝿', '(22/7)');
+    // let newValue = value.replace('x', '*');
+    // newValue = newValue.replace('𝝿', '(22/7)');
+
+    const map = {
+      x: '*',
+      '𝝿': '(22/7)',
+      '√': 'sqrt(',
+    };
+
+    const newValue = value.replace(/x|𝝿|√/gi, (m) => {
+      //@ts-ignore
+      return map[m];
+    });
+
     return newValue;
+  };
+
+  const isNumber: (expr: string) => boolean = (expr) => {
+    return !isNaN(parseFloat(expr));
   };
 
   // ------------------------- Handlers -------------------------
 
   const calculate = () => {
     let res = calculatorData.result;
-    let exprString = calculatorData.expr.join('');
+    let exprString = convertSymbols(calculatorData.expr.join(''));
 
     // ---- brackets fix ----
 
@@ -45,10 +61,12 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
     let rightBracketCount = exprString.match(/\)/g)?.length;
 
     if (leftBracketCount !== rightBracketCount) {
+      // check if we have any brackets
       if (!leftBracketCount) {
         return;
       }
 
+      // check if we have any right brackets, bcs this can be null
       rightBracketCount = rightBracketCount ? rightBracketCount : 0;
 
       while (leftBracketCount > rightBracketCount) {
@@ -60,32 +78,24 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
     // ---- try calculate string ----
 
     try {
-      res = Mathjs.evaluate(convertSymbols(exprString)).toString();
+      res = Mathjs.evaluate(exprString).toString();
     } catch (error) {
       res = 'Invalid Syntax';
     }
 
-    // ---- check if have good result ----
-
-    !isNaN(parseFloat(res)) ? dispatch(setExpr([res])) : dispatch(setExpr(['0']));
-
-    dispatch(setResult(res));
+    dispatch(setExpr([res]));
+    dispatch(setResult(isNumber(res) ? res : ''));
     dispatch(setEqualled(true));
   };
 
   const numberHandler = (value: string) => {
-    if (calculatorData.equalled) {
+    if (calculatorData.equalled || calculatorData.expr.join('') === '0') {
       dispatch(setExpr([value]));
       dispatch(setEqualled(false));
       return;
     }
 
-    // check if calc string is only "0"
-    if (calculatorData.expr.join() === '0') {
-      dispatch(setExpr([value]));
-    } else {
-      dispatch(setExpr([...calculatorData.expr, value]));
-    }
+    dispatch(setExpr([...calculatorData.expr, value]));
   };
 
   const operatorHandler = (value: string) => {
@@ -93,7 +103,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
 
     // some cases when you should add operator
     if (
-      !isNaN(Number(lastElement)) ||
+      isNumber(lastElement) ||
       lastElement === '(' ||
       lastElement === ')' ||
       value === '(' ||
@@ -105,22 +115,15 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   };
 
   const functionHandler = (value: string) => {
-    // add fun( + equalled value + )
+    const _expr = calculatorData.expr.join('');
 
-    if (calculatorData.equalled) {
-      dispatch(setExpr([value, ...calculatorData.expr, ')']));
+    if (calculatorData.equalled && _expr !== '0') {
+      dispatch(setExpr([value, ...calculatorData.expr]));
     } else {
-      if (calculatorData.expr.join('') === '0') {
+      if (_expr === '0') {
         dispatch(setExpr([value]));
       } else {
-        let last = [...calculatorData.expr].pop();
-        if (last) {
-          if (isNaN(parseFloat(last))) {
-            dispatch(setExpr([...calculatorData.expr, value]));
-          } else {
-            dispatch(setExpr([...calculatorData.expr, 'x', value]));
-          }
-        }
+        setExpr([...calculatorData.expr, value]);
       }
     }
 
@@ -136,6 +139,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   const deleteHandler = () => {
     if (calculatorData.expr.length > 0) {
       let _expr = [...calculatorData.expr];
+
       if (calculatorData.equalled) {
         let arr = Array.from(_expr.toString());
         arr.pop();
@@ -144,25 +148,21 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
         _expr.pop();
         if (_expr.length === 0) _expr.push('0');
       }
+
       dispatch(setExpr(_expr));
+      dispatch(setEqualled(false));
     }
   };
 
   const dotHandler = () => {
-    if (calculatorData.equalled) {
-      dispatch(setExpr(['0', '.']));
-    } else {
-      let index = calculatorData.expr.lastIndexOf('.');
-      if (index > -1) {
-        let num = calculatorData.expr.slice(index).join('');
-        if (isNaN(parseFloat(num))) {
-          dispatch(setExpr([...calculatorData.expr, '.']));
-        }
-      } else {
-        dispatch(setExpr([...calculatorData.expr, '.']));
-      }
-      console.log(index);
+    if (calculatorData.expr[calculatorData.expr.length - 1] === '.') {
+      return;
     }
+
+    calculatorData.equalled
+      ? dispatch(setExpr(['0', '.']))
+      : dispatch(setExpr([...calculatorData.expr, '.']));
+
     dispatch(setEqualled(false));
   };
 
@@ -197,7 +197,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
     }
   };
 
-  const handlePressAnimation: (out: boolean) => void = (out) => {
+  const runAnimation: (out: boolean) => void = (out) => {
     opacity.value = out ? withTiming(1) : withTiming(0.6, { duration: 100 });
     borderRadius.value = out ? withTiming(40) : withTiming(25, { duration: 100 });
   };
@@ -216,9 +216,9 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   return (
     <TouchableWithoutFeedback
       onPress={data.text === '()' ? () => bracketHandler('(') : () => handlePress()}
-      onLongPress={data.text === '()' ? () => operatorHandler(')') : () => {}}
-      onPressIn={() => handlePressAnimation(false)}
-      onPressOut={() => handlePressAnimation(true)}
+      onLongPress={data.text === '()' ? () => operatorHandler(')') : () => handlePress()}
+      onPressIn={() => runAnimation(false)}
+      onPressOut={() => runAnimation(true)}
     >
       <Animated.View style={[style, { backgroundColor: data.backgroundColor }, rStyle]}>
         <Text style={{ fontSize: data.fontSize }}>{data.text}</Text>
