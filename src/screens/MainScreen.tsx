@@ -107,6 +107,13 @@ const MainScreen = () => {
     };
   });
 
+  const rHistoryHeader = useAnimatedStyle(() => {
+    return {
+      display: translateY.value > MAX_TRANSLATE_Y * 0.5 ? 'flex' : 'none',
+      opacity: withTiming(translateY.value > MAX_TRANSLATE_Y * 0.6 ? 1 : 0),
+    };
+  });
+
   // ------------------------- Render Functions -------------------------
 
   const renderMathFunctions = () => {
@@ -159,9 +166,13 @@ const MainScreen = () => {
         </GestureDetector>
         <CalcDisplay
           historyListStyle={rHistoryListContainer}
+          historyHeaderStyle={rHistoryHeader}
           resultContainerHeight={
             SCREEN_HEIGHT - (MAX_TRANSLATE_Y + BOTTOM_SPACE + 25) /*25px is line height*/
           }
+          closeHistory={() => {
+            translateY.value = withTiming(0);
+          }}
         />
       </Animated.View>
       <Animated.FlatList
