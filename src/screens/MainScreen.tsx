@@ -129,7 +129,7 @@ const MainScreen = () => {
       <Animated.View style={[styles.mathFunctionsContainer, rMathFunctionsContainer]}>
         <View style={styles.mathFunctionsButtonsContainer}>
           {mathFunctionsButtonsData.map((data) => (
-            <CalcButton data={data} style={styles.mathFunctionsButton} />
+            <CalcButton data={data} style={styles.mathFunctionsButton} key={data.text} />
           ))}
           <AnimatedTouchable
             style={[styles.mathFunctionsButton, rMathFunctionsButton]}
@@ -147,6 +147,7 @@ const MainScreen = () => {
         >
           {mathFunctionsSubViewButtonsData.map((data) => (
             <CalcButton
+              key={data.text}
               data={data}
               style={[styles.mathFunctionsSubViewButton, rMathFunctionsSubViewButton]}
             />
