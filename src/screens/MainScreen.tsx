@@ -17,7 +17,7 @@ const MAX_TRANSLATE_Y = SCREEN_HEIGHT * 0.7;
 const BOTTOM_SPACE = 50;
 
 const MainScreen = () => {
-  // Add animated component for TouchableOpacity
+  // Add animated component
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableWithoutFeedback);
 
   const translateY = useSharedValue<number>(0);
@@ -41,7 +41,7 @@ const MainScreen = () => {
       if (translateY.value > MAX_TRANSLATE_Y * 0.5) {
         translateY.value = withTiming(MAX_TRANSLATE_Y - BOTTOM_SPACE);
       } else if (
-        translateY.value > MAX_TRANSLATE_Y * 0.2 &&
+        translateY.value > MAX_TRANSLATE_Y * 0.15 &&
         translateY.value < MAX_TRANSLATE_Y * 0.5
       ) {
         translateY.value = withTiming(MAX_TRANSLATE_Y * 0.3);
