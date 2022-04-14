@@ -39,10 +39,16 @@ const CalcDisplay: React.FC<CalcDisplayProps> = ({
         <Text style={styles.headerArrowText}>{'<'}</Text>
       </TouchableOpacity>
       <Text style={styles.historyTitle}>history</Text>
-      <TouchableOpacity style={styles.clearHistoryButton} onPress={handleClearHistory}>
+      <TouchableOpacity onPress={handleClearHistory}>
         <Text style={styles.clearHistoryText}>{'Clear'}</Text>
       </TouchableOpacity>
     </Animated.View>
+  );
+
+  const renderHistoryItem = (expr: string, result: string) => (
+    <View style={styles.historyItem}>
+      <Text style={styles.historyItemText}>{`${expr} = ${result}`}</Text>
+    </View>
   );
 
   return (
@@ -56,19 +62,15 @@ const CalcDisplay: React.FC<CalcDisplayProps> = ({
         </Text>
         <Text style={styles.calcDisplayDescription}>Current calculations</Text>
       </View>
-      <Animated.View
-        style={[
-          historyListStyle,
-          {
-            backgroundColor: APP_COLORS.darkPurple,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          },
-        ]}
-      >
-        {renderHeader()}
-      </Animated.View>
+      <Animated.FlatList
+        inverted
+        style={[historyListStyle, styles.historyContainer]}
+        contentContainerStyle={styles.historyContainerContent}
+        data={calculatorData.history}
+        keyExtractor={(item, index) => item.expr + item.result + index}
+        renderItem={({ item }) => renderHistoryItem(item.expr, item.result)}
+      />
+      {renderHeader()}
     </View>
   );
 };
@@ -102,18 +104,17 @@ const styles = StyleSheet.create({
     color: APP_COLORS.white,
     opacity: 0.7,
   },
-  clearHistoryButton: {},
   clearHistoryText: {
     fontSize: 20,
     fontWeight: '600',
     marginRight: 8,
   },
   header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
     width: '100%',
     height: 50,
+
+    // need move header by it height
+    marginTop: 50,
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
@@ -130,10 +131,31 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '600',
   },
+  historyContainer: {
+    backgroundColor: APP_COLORS.darkPurple,
+    width: '100%',
+  },
+  historyContainerContent: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    flexDirection: 'column-reverse',
+  },
+  historyItem: {
+    width: '100%',
+    marginVertical: 4,
+    marginRight: 8,
+  },
+  historyItemText: {
+    transform: [{ scaleY: -1 }],
+    fontSize: 48,
+    fontWeight: '500',
+  },
   historyTitle: {
     textAlign: 'center',
     fontSize: 22,
-    fontWeight: '600',
+    fontWeight: '500',
     position: 'absolute',
     left: 0,
     right: 0,
