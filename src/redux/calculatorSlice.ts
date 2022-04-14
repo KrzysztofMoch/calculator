@@ -7,9 +7,9 @@ interface CalculatorSliceType {
 }
 
 const initialState = {
-  result: '0',
-  expr: ['0'],
-  equalled: false,
+  result: '',
+  expr: [''],
+  equalled: true,
 } as CalculatorSliceType;
 
 const calculatorSlice = createSlice({
