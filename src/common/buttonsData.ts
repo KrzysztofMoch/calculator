@@ -1,6 +1,6 @@
 import { APP_COLORS } from './colors';
 
-interface buttonData {
+interface Button {
   text: string;
   fontSize: number;
   backgroundColor: string;
@@ -9,7 +9,7 @@ interface buttonData {
 
 type buttonType = 'function' | 'number' | 'clear' | 'operator' | 'delete' | 'dot' | 'calculate';
 
-const buttonsData: buttonData[] = [
+const buttonsData: Button[] = [
   {
     text: 'AC',
     fontSize: 22,
@@ -132,7 +132,7 @@ const buttonsData: buttonData[] = [
   },
 ];
 
-const mathFunctionsButtonsData: buttonData[] = [
+const mathFunctionsButtonsData: Button[] = [
   {
     text: '√',
     fontSize: 40,
@@ -159,7 +159,7 @@ const mathFunctionsButtonsData: buttonData[] = [
   },
 ];
 
-const mathFunctionsSubViewButtonsData: buttonData[] = [
+const mathFunctionsSubViewButtonsData: Button[] = [
   {
     text: 'RAD',
     fontSize: 22,
@@ -211,5 +211,5 @@ const mathFunctionsSubViewButtonsData: buttonData[] = [
 ];
 
 export { mathFunctionsButtonsData, mathFunctionsSubViewButtonsData };
-export type { buttonData, buttonType };
+export type { Button as buttonData, buttonType };
 export default buttonsData;

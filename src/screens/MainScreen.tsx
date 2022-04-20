@@ -5,7 +5,6 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { APP_COLORS } from '../common/colors';
 import buttonsData, {
-  buttonData,
   mathFunctionsButtonsData,
   mathFunctionsSubViewButtonsData,
 } from '../common/buttonsData';
@@ -13,6 +12,7 @@ import CalcDisplay from '../components/CalcDisplay';
 import CalcButton from '../components/CalcButton';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('screen');
+
 const MAX_TRANSLATE_Y = SCREEN_HEIGHT * 0.7;
 const BOTTOM_SPACE = 50;
 
@@ -125,6 +125,18 @@ const MainScreen = () => {
     };
     // ------------------------- Render Functions -------------------------
 
+    const renderExpandedMathView = () => (
+      <Animated.View style={[styles.mathFunctionsSubView, rMathFunctionsSubView]}>
+        {mathFunctionsSubViewButtonsData.map((data) => (
+          <CalcButton
+            key={data.text}
+            data={data}
+            style={[styles.mathFunctionsSubViewButton, rMathFunctionsSubViewButton]}
+          />
+        ))}
+      </Animated.View>
+    );
+
     return (
       <Animated.View style={[styles.mathFunctionsContainer, rMathFunctionsContainer]}>
         <View style={styles.mathFunctionsButtonsContainer}>
@@ -138,21 +150,7 @@ const MainScreen = () => {
             <Text style={{ fontSize: 40 }}>{'>'}</Text>
           </AnimatedTouchable>
         </View>
-        <Animated.View
-          style={[
-            styles.mathFunctionsSubView,
-            rMathFunctionsSubView,
-            { display: isMathSubViewExpanded ? 'flex' : 'none' },
-          ]}
-        >
-          {mathFunctionsSubViewButtonsData.map((data) => (
-            <CalcButton
-              key={data.text}
-              data={data}
-              style={[styles.mathFunctionsSubViewButton, rMathFunctionsSubViewButton]}
-            />
-          ))}
-        </Animated.View>
+        {isMathSubViewExpanded && renderExpandedMathView()}
       </Animated.View>
     );
   };
@@ -219,14 +217,12 @@ const styles = StyleSheet.create({
   lineContainer: {
     height: 25,
     width: SCREEN_WIDTH,
-    display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
   },
   mathFunctionsContainer: {
     width: SCREEN_WIDTH,
-    display: 'flex',
     justifyContent: 'flex-start',
     alignContent: 'flex-start',
   },
@@ -236,18 +232,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
-    display: 'flex',
   },
   mathFunctionsButton: {
     width: (SCREEN_WIDTH - 60) / 5,
-    display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     height: 70,
   },
   mathFunctionsSubViewButton: {
     width: (SCREEN_WIDTH - 60) / 4,
-    display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     height: 70,
@@ -269,7 +262,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     overflow: 'hidden',
-    display: 'flex',
     flexDirection: 'column-reverse',
   },
 });

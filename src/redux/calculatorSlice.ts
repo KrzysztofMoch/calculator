@@ -1,12 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-type history = {expr: string, result: string}
+type History = {expr: string, result: string}
 
 interface CalculatorSliceType {
   result: string;
   expr: string[];
   equalled: boolean;
-  history: history[] | []
+  history: History[] | []
 }
 
 const initialState = {
@@ -32,7 +32,7 @@ const calculatorSlice = createSlice({
     setEqualled(state, action: PayloadAction<boolean>) {
       state.equalled = action.payload;
     },
-    addToHistory(state, action: PayloadAction<history>){
+    addToHistory(state, action: PayloadAction<History>){
       state.history = [...state.history, action.payload];
     },
     clearHistory(state){
@@ -41,5 +41,6 @@ const calculatorSlice = createSlice({
   },
 });
 
+export type { History }
 export const { setAll, setResult, setExpr, setEqualled, addToHistory, clearHistory } = calculatorSlice.actions;
 export default calculatorSlice.reducer;

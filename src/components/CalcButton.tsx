@@ -1,5 +1,12 @@
 import React from 'react';
-import { StyleProp, Text, ToastAndroid, TouchableWithoutFeedback, ViewStyle } from 'react-native';
+import {
+  Platform,
+  StyleProp,
+  Text,
+  ToastAndroid,
+  TouchableWithoutFeedback,
+  ViewStyle,
+} from 'react-native';
 import { buttonData } from '../common/buttonsData';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { all, create } from 'mathjs';
@@ -12,25 +19,23 @@ interface CalcButtonProps {
   style: StyleProp<ViewStyle>;
 }
 
-const Mathjs = create(all);
-
-const ln = (num: number) => Math.log(num);
-ln.transform = (num: number) => ln(num);
-Mathjs.import({ ln: ln }, {});
-
 const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
+  const { text: buttonText, fontSize, backgroundColor, type: buttonType } = data;
   const borderRadius = useSharedValue<number>(40);
   const opacity = useSharedValue<number>(1);
 
   // ------------------------- Utilities -------------------------
 
+  const Mathjs = create(all);
+
+  const ln = (num: number) => Math.log(num);
+  ln.transform = (num: number) => ln(num);
+  Mathjs.import({ ln: ln }, {});
+
   const calculatorData = useSelector((state: RootReducer) => state.calculator);
   const dispatch = useDispatch();
 
   const convertSymbols: (value: string) => string = (value) => {
-    // let newValue = value.replace('x', '*');
-    // newValue = newValue.replace('𝝿', '(22/7)');
-
     const map = {
       x: '*',
       '𝝿': '(22/7)',
@@ -56,7 +61,7 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
       return;
     }
 
-    let res = calculatorData.result;
+    let result = calculatorData.result;
     let exprString = convertSymbols(calculatorData.expr.join(''));
 
     // ---- brackets fix ----
@@ -82,14 +87,14 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
     // ---- try calculate string ----
 
     try {
-      res = Mathjs.evaluate(exprString).toString();
-      dispatch(addToHistory({ expr: calculatorData.expr.join(''), result: res }));
+      result = Mathjs.evaluate(exprString).toString();
+      dispatch(addToHistory({ expr: calculatorData.expr.join(''), result }));
     } catch (error) {
-      res = 'Invalid Syntax';
+      result = 'Invalid Syntax';
     }
 
-    dispatch(setExpr([res]));
-    dispatch(setResult(isNumber(res) ? res : ''));
+    dispatch(setExpr([result]));
+    dispatch(setResult(isNumber(result) ? result : ''));
     dispatch(setEqualled(true));
   };
 
@@ -172,12 +177,12 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
   };
 
   const bracketHandler: (value: string) => void = (value) => {
-    ToastAndroid.showWithGravity('Long press for ")"', 1000, 1);
+    Platform.OS === 'android' ? ToastAndroid.showWithGravity('Long press for ")"', 1000, 1) : {};
     operatorHandler(value);
   };
 
   const handlePress = () => {
-    switch (data.type) {
+    switch (buttonType) {
       case 'calculate':
         calculate();
         break;
@@ -188,13 +193,13 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
         deleteHandler();
         break;
       case 'number':
-        numberHandler(data.text);
+        numberHandler(buttonText);
         break;
       case 'operator':
-        operatorHandler(data.text);
+        operatorHandler(buttonText);
         break;
       case 'function':
-        functionHandler(data.text);
+        functionHandler(buttonText);
         break;
       case 'dot':
         dotHandler();
@@ -220,13 +225,13 @@ const CalcButton: React.FC<CalcButtonProps> = ({ data, style }) => {
 
   return (
     <TouchableWithoutFeedback
-      onPress={data.text === '()' ? () => bracketHandler('(') : () => handlePress()}
-      onLongPress={data.text === '()' ? () => operatorHandler(')') : () => handlePress()}
+      onPress={buttonText === '()' ? () => bracketHandler('(') : handlePress}
+      onLongPress={buttonText === '()' ? () => operatorHandler(')') : handlePress}
       onPressIn={() => runAnimation(false)}
       onPressOut={() => runAnimation(true)}
     >
-      <Animated.View style={[style, { backgroundColor: data.backgroundColor }, rStyle]}>
-        <Text style={{ fontSize: data.fontSize }}>{data.text}</Text>
+      <Animated.View style={[style, { backgroundColor }, rStyle]}>
+        <Text style={{ fontSize: fontSize }}>{buttonText}</Text>
       </Animated.View>
     </TouchableWithoutFeedback>
   );

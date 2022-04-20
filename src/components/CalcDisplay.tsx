@@ -5,7 +5,7 @@ import { APP_COLORS } from '../common/colors';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootReducer } from '../redux/store';
 import { TouchableOpacity } from 'react-native';
-import { clearHistory } from '../redux/calculatorSlice';
+import { clearHistory, History } from '../redux/calculatorSlice';
 
 interface CalcDisplayProps {
   historyListStyle: StyleProp<ViewStyle>;
@@ -45,11 +45,15 @@ const CalcDisplay: React.FC<CalcDisplayProps> = ({
     </Animated.View>
   );
 
-  const renderHistoryItem = (expr: string, result: string) => (
-    <View style={styles.historyItem}>
-      <Text style={styles.historyItemText}>{`${expr} = ${result}`}</Text>
-    </View>
-  );
+  const renderHistoryItem = ({ item: { expr, result } }: { item: History }) => {
+    // ------------------------- Render Functions -------------------------
+
+    return (
+      <View style={styles.historyItem}>
+        <Text style={styles.historyItemText}>{`${expr} = ${result}`}</Text>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -67,8 +71,8 @@ const CalcDisplay: React.FC<CalcDisplayProps> = ({
         style={[historyListStyle, styles.historyContainer]}
         contentContainerStyle={styles.historyContainerContent}
         data={calculatorData.history}
-        keyExtractor={(item, index) => item.expr + item.result + index}
-        renderItem={({ item }) => renderHistoryItem(item.expr, item.result)}
+        keyExtractor={({ expr, result }, index) => expr + result + index}
+        renderItem={renderHistoryItem}
       />
       {renderHeader()}
     </View>
@@ -78,11 +82,9 @@ const CalcDisplay: React.FC<CalcDisplayProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    display: 'flex',
     flexDirection: 'column-reverse',
   },
   calcDisplay: {
-    display: 'flex',
     paddingRight: 20,
     alignItems: 'flex-end',
     justifyContent: 'center',
@@ -123,7 +125,6 @@ const styles = StyleSheet.create({
   headerArrow: {
     width: 50,
     height: 50,
-    display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -137,7 +138,6 @@ const styles = StyleSheet.create({
   },
   historyContainerContent: {
     width: '100%',
-    display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
     flexDirection: 'column-reverse',
